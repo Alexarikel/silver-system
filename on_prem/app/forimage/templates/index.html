@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Forms</title>
+    </head>
+    <body>
+        <h1>Medical report to the insurance company</h1>
+        <form action="/submit" method="POST">
+            <label for="doctor">Enter doctor`s last name: </label>
+            <input type="text" id="doctor" name="doctor" placeholder="doctor`s last name..." required>
+            <br><br>
+            <label for="department">Hospital department: </label>
+            <select name="department" id="department">
+                <option value="Therapeutic">Therapeutic</option>
+                <option value="Pediatric">Pediatric</option>
+                <option value="Surgery">Surgery</option>
+                <option value="Ophthalmology">Ophthalmology</option>
+                <option value="Cardiology">Cardiology</option>
+                <option value="IncredibleDiagnostic">Incredible diagnostic</option>
+                <option value="Spells&magic">Spells and magic</option>
+            </select>
+
+            <br><br>
+            
+            <label for="first_name">Enter patient`s first name: </label>
+            <input type="text" id="first_name" name="first_name" placeholder="patient`s first name..." required>
+            <br><br>
+            <label for="last_name">Enter patient`s last name: </label>
+            <input type="text" id="last_name" name="last_name" placeholder="patient`s last name..." required>
+            <br><br>
+
+            <p>Enter patient`s age:</p>
+
+            <input type="radio" name="age" value="0-12" id="option 1">
+            <label for="option 1">0-12</label>
+            <input type="radio" name="age" value="13-30" id="option 2">
+            <label for="option 2">13-30</label>
+            <input type="radio" name="age" value="31-50" id="option 3">
+            <label for="option 3">31-50</label>
+            <input type="radio" name="age" value="51+" id="option 4">
+            <label for="option 4">51+</label>
+
+            <br><br>
+
+            <label for="cost">Cost of treatment provided ($): </label>
+            <input type="number" min="50" max="1000" step="10" id="cost" name="cost" placeholder="cost of services..." required>
+            <br><br>
+
+            <input type="submit">
+        </form>
+
+    </body>
+</html>
