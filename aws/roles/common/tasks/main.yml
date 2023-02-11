@@ -1,0 +1,41 @@
+---
+# tasks file for common_role
+
+- name: Allow passwordless sudo
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: "^%sudo"
+    line: "%sudo ALL=(ALL) NOPASSWD: ALL"
+    validate: "visudo -cf %s"
+
+- name: Update all packages to their latest version
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+    update_cache: yes
+
+- name: Install docker on ubuntu servers
+  ansible.builtin.shell: curl -fsSL https://get.docker.com -o get-docker.sh && chmod +x get-docker.sh && ./get-docker.sh
+
+- name: Check if docker is installed
+  ansible.builtin.shell: docker --version || exit 0
+  register: docker_version
+  
+- name: Print result
+  ansible.builtin.debug:
+    verbosity: 1
+    msg: Output - "{{ docker_version }}"
+
+- name: Install docker-compose on ubuntu servers
+  ansible.builtin.shell: curl -SL https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-linux-x86_64 -o docker-compose && chmod +x docker-compose && mv docker-compose /usr/local/bin
+
+- name: Check if docker-compose is installed
+  ansible.builtin.shell: docker-compose --version || exit 0
+  register: dockercomp_version
+
+- name: Print result
+  ansible.builtin.debug:
+    verbosity: 1
+    msg: Output - "{{ dockercomp_version }}"  
+  

@@ -1,0 +1,7 @@
+---
+- name: Configure servers and install Docker
+  hosts: all
+  become: true
+  roles:
+    - common
+
