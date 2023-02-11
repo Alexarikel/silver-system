@@ -3,6 +3,11 @@ module "servers" {
   db_pass = var.db_pass
   db_user = var.db_user
   db_name = var.db_name
+  ssh_key = var.ssh_key
+}
+
+variable "ssh_key" {
+  description = "ssh-key for AWS instances"
 }
 
 variable "db_name" {
@@ -16,7 +21,7 @@ variable "db_user" {
 }
 
 variable "db_pass" {
-  description = "Password of DB"
+  description = "Password for DB"
   type = string
   sensitive = true
 }

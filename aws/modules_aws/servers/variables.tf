@@ -1,6 +1,5 @@
 variable "ssh_key" {
   description = "ssh-key for AWS instances"
-  default = "~/.ssh/web_study.pem"
 }
 
 variable "ssh_user" {
@@ -90,7 +89,7 @@ variable "db_user" {
 }
 
 variable "db_pass" {
-  description = "Password of DB"
+  description = "Password for DB"
   type = string
   sensitive = true
 }

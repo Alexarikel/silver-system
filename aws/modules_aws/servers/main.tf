@@ -250,14 +250,3 @@ resource "aws_db_instance" "database" {
     create_before_destroy = true
   }
 }
-
-#resource "local_file" "inventory" {
-# filename = "../hosts"
-# content = <<EOF
-#[webserver]
-#${aws_instance.web-server.public_ip}
-
-#[app]
-#${aws_instance.app-server.private_ip}
-#EOF
-#}
