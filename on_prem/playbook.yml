@@ -1,0 +1,12 @@
+---
+- name: Configure servers and install Docker
+  hosts: all
+  become: true
+  roles:
+    - common
+
+- name: Configure working directory for database container
+  hosts: database
+  roles:
+    - database
+
