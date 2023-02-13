@@ -18,7 +18,6 @@ pipeline {
                         sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path:'/on_prem/app/']]]
                         ],
                         userRemoteConfigs: [[credentialsId: 'jenkins_key', url: 'git@github.com:DevopsAutumn2022/silver-system.git/']]])
-                        sh "ls -ltr"
                     }
                 }
                 stage ('Chekout to server1') {
@@ -33,7 +32,6 @@ pipeline {
                         sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path:'/on_prem/mariadb/']]]
                         ],
                         userRemoteConfigs: [[credentialsId: 'jenkins_key', url: 'git@github.com:DevopsAutumn2022/silver-system.git/']]])
-                        sh "ls -ltr"
                     }
                 }
             }
@@ -94,8 +92,8 @@ pipeline {
                             sh """
                             cd on_prem/app
                             scp -i ${jenkins_deploy} -o StrictHostKeyChecking=no docker-compose.yml .env ${params.username}@${params.server}:~/
-                            docker save app | ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.server} docker load
-                            ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.server} docker-compose up -d
+                            docker save app:latest | ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.server} docker load
+                            ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.server} docker-compose up -d --force-recreate
                             """
 	                }
 	            }
@@ -108,10 +106,10 @@ pipeline {
                         withCredentials([sshUserPrivateKey(credentialsId: 'jenkins_deploy', keyFileVariable: 'jenkins_deploy', usernameVariable: '${params.username}')]) {
                             sh """
                             cd on_prem/mariadb
-                            ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.dbserver} mkdir ~/backup
+                            ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.dbserver} [ ! -d ~/backup ] && mkdir ~/backup
                             scp -i ${jenkins_deploy} -o StrictHostKeyChecking=no docker-compose.yml .env ${params.username}@${params.dbserver}:~/
                             scp -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.dbbackup} ${params.username}@${params.dbserver}:~/backup/
-                            ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.dbserver} docker-compose up -d
+                            ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.dbserver} docker-compose up -d --force-recreate
                             """
 	                }
 	            }
