@@ -1,0 +1,122 @@
+pipeline {
+    agent any
+    triggers {
+        pollSCM '* * * * *'
+    }
+    stages {
+        stage('Checkout') {
+            parallel {
+                stage ('Chekout to ubuntu20') {
+                    agent {
+                        label 'ubuntu20'
+                    }
+                    steps {
+                        checkout([$class: 'GitSCM', 
+                        branches: [[name: '*/main']],
+                        extensions: [
+                        [$class: 'SparseCheckoutPaths', 
+                        sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path:'/on_prem/app/']]]
+                        ],
+                        userRemoteConfigs: [[credentialsId: 'jenkins_key', url: 'git@github.com:DevopsAutumn2022/silver-system.git/']]])
+                        sh "ls -ltr"
+                    }
+                }
+                stage ('Chekout to server1') {
+                    agent {
+                        label 'server1_agent'
+                    }
+                    steps {
+                        checkout([$class: 'GitSCM', 
+                        branches: [[name: '*/main']],
+                        extensions: [
+                        [$class: 'SparseCheckoutPaths', 
+                        sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path:'/on_prem/mariadb/']]]
+                        ],
+                        userRemoteConfigs: [[credentialsId: 'jenkins_key', url: 'git@github.com:DevopsAutumn2022/silver-system.git/']]])
+                        sh "ls -ltr"
+                    }
+                }
+            }
+        }
+        stage('Build app image') {
+            agent {
+                label 'ubuntu20'
+            }
+            steps {
+                echo "Building image.."
+                sh """
+                cd on_prem/app && docker build -t app:1.${BUILD_NUMBER} -t app:latest .
+                """
+            }
+        }
+        stage('Test app image') {
+            agent {
+                label 'ubuntu20'
+            }
+            steps {
+                echo "Testing image.."
+                sh '''
+                res="$(docker images | grep app | grep "1.${BUILD_NUMBER}" -c)"
+                if [ $res -ne 1 ]; then echo failed test && exit 1; fi
+                '''
+            }
+        }
+        stage('Prepare dependencies') {
+            parallel {
+                stage('Prepare dependencies for app') {
+                    agent {
+                        label 'ubuntu20'
+                    }
+                    steps {
+                        withCredentials([file(credentialsId: 'app_secret', variable: 'KEY_FILE')]) {
+                            sh(script: "cat $KEY_FILE > on_prem/app/.env")}
+                    }
+                }
+                stage('Prepare dependencies for db') {
+                    agent {
+                        label 'server1_agent'
+                    }
+                    steps {
+                        withCredentials([file(credentialsId: 'db_secret', variable: 'KEY_FILE')]) {
+                            sh(script: "cat $KEY_FILE > on_prem/mariadb/.env")}
+                    }
+                }
+            }
+        }
+        stage('Deploy') {
+            parallel {
+                stage('Deploy on app server') {
+                    agent {
+	                label 'ubuntu20'
+                    }
+	            steps {
+                        withCredentials([sshUserPrivateKey(credentialsId: 'jenkins_deploy', keyFileVariable: 'jenkins_deploy', usernameVariable: '${params.username}')]) {
+                            sh """
+                            cd on_prem/app
+                            scp -i ${jenkins_deploy} -o StrictHostKeyChecking=no docker-compose.yml .env ${params.username}@${params.server}:~/
+                            docker save app | ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.server} docker load
+                            ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.server} docker-compose up -d
+                            """
+	                }
+	            }
+                }
+                stage('Deploy on db server') {
+                    agent {
+	                label 'server1_agent'
+                    }
+	            steps {
+                        withCredentials([sshUserPrivateKey(credentialsId: 'jenkins_deploy', keyFileVariable: 'jenkins_deploy', usernameVariable: '${params.username}')]) {
+                            sh """
+                            cd on_prem/mariadb
+                            ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.dbserver} mkdir ~/backup
+                            scp -i ${jenkins_deploy} -o StrictHostKeyChecking=no docker-compose.yml .env ${params.username}@${params.dbserver}:~/
+                            scp -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.dbbackup} ${params.username}@${params.dbserver}:~/backup/
+                            ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.dbserver} docker-compose up -d
+                            """
+	                }
+	            }
+                }
+            }
+        }
+    }
+}
