@@ -32,10 +32,10 @@ pipeline {
         stage('Test image') {
             steps {
                 echo "Testing image.."
-                sh """
+                sh '''
                 res="$(docker images | grep app | grep "1.${BUILD_NUMBER}" -c)"
                 if [ $res -ne 1 ]; then echo failed test && exit 1; fi
-                """
+                '''
             }
         }
         stage('Prepare dependencies') {

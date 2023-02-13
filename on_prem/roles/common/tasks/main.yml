@@ -39,6 +39,19 @@
     verbosity: 1
     msg: Output - "{{ dockercomp_version }}"  
 
+- name: Add admin user with sudo privileges to docker group
+  ansible.builtin.user:
+    name: "{{ user }}"
+    groups: docker
+    append: yes
+    state: present
+
+- name: Set authorized key taken from file
+  ansible.posix.authorized_key:
+    user: "{{ user }}"
+    state: present
+    key: "{{ lookup('file', '{{ key_path }}') }}"
+
 - name: Resize vsphere virtual disk
   ansible.builtin.shell: growpart /dev/sda 3; pvresize /dev/sda3 && lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv; resize2fs /dev/ubuntu-vg/ubuntu-lv || exit 0
   

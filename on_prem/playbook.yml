@@ -2,6 +2,7 @@
 - name: Configure servers and install Docker
   hosts: all
   become: true
+  vars_files: ansible_creds.yml
   roles:
     - common
 
