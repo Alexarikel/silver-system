@@ -9,7 +9,7 @@ services:
       - 3306:3306
     volumes:
       - ./data:/var/lib/mysql
-      - ./backup/${database}02.sql:/docker-entrypoint-initdb.d/${database}02.sql
+      - ./backup/${database}backup.sql:/docker-entrypoint-initdb.d/${database}.sql
     environment:
       MARIADB_DATABASE: ${database}
       MYSQL_ROOT_PASSWORD: ${root_pass}
