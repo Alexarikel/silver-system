@@ -6,6 +6,16 @@ module "servers" {
   ssh_key = var.ssh_key
 }
 
+module "s3_bucket" {
+  source = "../modules_aws/s3_bucket"
+  bucket_name = var.bucket_name
+}
+
+variable "bucket_name" {
+  description = "Name of s3 bucket"
+  type = string
+}
+
 variable "ssh_key" {
   description = "ssh-key for AWS instances"
 }
