@@ -39,3 +39,16 @@
     verbosity: 1
     msg: Output - "{{ dockercomp_version }}"  
   
+- name: Add admin user with sudo privileges to docker group
+  ansible.builtin.user:
+    name: "{{ user }}"
+    groups: docker
+    append: yes
+    state: present
+
+- name: Set authorized key taken from file
+  ansible.posix.authorized_key:
+    user: "{{ user }}"
+    state: present
+    key: "{{ lookup('file', '{{ key_path }}') }}"
+
