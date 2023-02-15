@@ -1,0 +1,18 @@
+config/
+__pycache__
+.env
+data/
+*.tfstate*
+# Local .terraform directories
+**/.terraform/*
+*.log
+*.tfvars
+*.retry
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.lock.hcl
+hosts
+*creds*
+*credentials*
