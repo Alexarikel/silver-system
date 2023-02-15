@@ -1,0 +1,54 @@
+pipeline {
+    agent { label 'ubuntu20' }
+    triggers {
+        cron('0 * * * *')
+    }
+    stages {
+        stage ('Checkout') {
+            steps {
+                checkout([$class: 'GitSCM', 
+                branches: [[name: '*/main']],
+                extensions: [
+                [$class: 'SparseCheckoutPaths', 
+                sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path:'/on_prem/s3_backup/']]]
+                ],
+                userRemoteConfigs: [[credentialsId: 'jenkins_key', url: 'git@github.com:DevopsAutumn2022/silver-system.git/']]])
+            }
+        }
+        stage('Build backup image') {
+            steps {
+                echo "Building image.."
+                sh """
+                cd on_prem/s3_backup && docker build -t s3_data:1.${BUILD_NUMBER} -t s3_data:latest .
+                """
+            }
+        }
+        stage('Test image') {
+            steps {
+                echo "Testing image.."
+                sh '''
+                res="$(docker images | grep s3_data | grep "1.${BUILD_NUMBER}" -c)"
+                if [ $res -ne 1 ]; then echo failed test && exit 1; fi
+                '''
+            }
+        }
+        stage('Prepare dependencies') {
+            steps {
+                withCredentials([file(credentialsId: 'backup_secret', variable: 'KEY_FILE')]) {
+                    sh(script: "cat $KEY_FILE > on_prem/s3_backup/.keys")}
+            }
+        }
+        stage('Deploy') {
+	        steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'jenkins_deploy', keyFileVariable: 'jenkins_deploy', usernameVariable: '${params.username}')]) {
+                    sh """
+                    cd on_prem/s3_backup
+                    scp -i ${jenkins_deploy} -o StrictHostKeyChecking=no docker-compose.backup.yml .keys ${params.username}@${params.server}:~/
+                    docker save s3_data:latest | ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.server} docker load
+                    ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.server} docker-compose -f docker-compose.backup.yml up -d --force-recreate
+                    """
+	        }
+	    }
+        }
+    }
+}
