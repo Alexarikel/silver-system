@@ -4,6 +4,10 @@ Infrastructure and data transferring process between unrelated companies
 ### The project immitates ETL process of data transfer between unrelated companies using third party resource - S3 bucket.
 ---
 
+#### The project schema:
+
+<br/>![schema](https://github.com/DevopsAutumn2022/silver-system/blob/main/project_schema.PNG)
+
 #### Stack of technologies:
 - Terraform
 - Ansible
@@ -26,3 +30,5 @@ and every hour makes data backup and sends it to s3 backet.
 
 **AWS** folder content raises an infrastracture in AWS Cloud, deploys application to 
 application server, and every hour restores data from s3 bucket to RDS instanse. 
+
+
