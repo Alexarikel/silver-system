@@ -13,9 +13,7 @@ RUN pip3 install boto3
 
 WORKDIR /app
 
-COPY ./db_script.py .
-COPY ./S3_bucket.py .
-COPY ./dump.sh .
+COPY ./forimage/ ./
 
 RUN chmod +x dump.sh
 
