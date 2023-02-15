@@ -75,8 +75,8 @@ pipeline {
                         label 'server1_agent'
                     }
                     steps {
-                        withCredentials([file(credentialsId: 'db_secret', variable: 'KEY_FILE')]) {
-                            sh(script: "cat $KEY_FILE > on_prem/mariadb/.env")}
+                        withCredentials([string(credentialsId: 'db_secret', variable: 'KEY_FILE')]) {
+                            sh(script: "echo $KEY_FILE > on_prem/mariadb/.env")}
                     }
                 }
             }
@@ -85,7 +85,7 @@ pipeline {
             parallel {
                 stage('Deploy on app server') {
                     agent {
-	                label 'ubuntu20'
+	                    label 'ubuntu20'
                     }
 	            steps {
                         withCredentials([sshUserPrivateKey(credentialsId: 'jenkins_deploy', keyFileVariable: 'jenkins_deploy', usernameVariable: '${params.username}')]) {
@@ -100,7 +100,7 @@ pipeline {
                 }
                 stage('Deploy on db server') {
                     agent {
-	                label 'server1_agent'
+	                    label 'server1_agent'
                     }
 	            steps {
                         withCredentials([sshUserPrivateKey(credentialsId: 'jenkins_deploy', keyFileVariable: 'jenkins_deploy', usernameVariable: '${params.username}')]) {
@@ -115,6 +115,11 @@ pipeline {
 	            }
                 }
             }
+        }
+    }
+    post{
+        success{
+            build propagate: false, job: 's3_data_backup'
         }
     }
 }
