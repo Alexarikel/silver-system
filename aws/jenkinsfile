@@ -14,7 +14,7 @@ pipeline {
                 dir("host") {
                     git credentialsId: 'host_ip_repo', url: 'git@github.com:DevopsAutumn2022/host.git'
                     script {
-                        sh "cat host | awk -F ' ' 'NR==1{print \$2}' > tmpfile"
+                        sh "cat host | awk -F ':' 'NR==1{print \$2}' > tmpfile"
                         app_host = readFile 'tmpfile'
                         app_host = app_host.trim()
                     }
@@ -60,7 +60,7 @@ pipeline {
                 withCredentials([file(credentialsId: 'rds_backup_secret', variable: 'KEY_FILE')]) {
                     sh'''
                     cat $KEY_FILE > aws/app/.keys
-                    HOST=$(cat host/host | awk -F ' ' 'NR==2{print $2}')
+                    HOST=$(cat host/host | awk -F ':' 'NR==2{print $2}')
                     echo HOST=$HOST >> aws/app/.keys
                     '''
                 }
