@@ -15,6 +15,11 @@
     state: latest
     update_cache: yes
 
+- name: Install MariaDB Client 
+  ansible.builtin.apt:
+    name: mariadb-client
+    state: latest
+
 - name: Install docker on ubuntu servers
   ansible.builtin.shell: curl -fsSL https://get.docker.com -o get-docker.sh && chmod +x get-docker.sh && ./get-docker.sh
 
