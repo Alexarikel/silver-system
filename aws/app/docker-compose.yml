@@ -1,0 +1,6 @@
+services:
+  app:
+    image: s3_data:latest
+    container_name: s3_data
+    env_file:
+      - .keys

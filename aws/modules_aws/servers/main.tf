@@ -110,7 +110,7 @@ resource "aws_security_group" "rds-sg" {
     from_port        = 3306
     to_port          = 3306
     protocol         = "tcp"
-    cidr_blocks      = [aws_instance.web-server.public_ip]
+    cidr_blocks      = [join("/", [aws_instance.web-server.public_ip, "32"])]
   }
   egress {
     from_port        = 0
@@ -248,5 +248,17 @@ resource "aws_db_instance" "database" {
 
   lifecycle {
     create_before_destroy = true
+  }
+}
+
+resource "local_file" "inventory" {
+ filename = "../host/host"
+ content = <<EOF
+webserver: ${aws_instance.web-server.public_ip}
+rds: ${aws_db_instance.database.endpoint}
+EOF
+
+  provisioner "local-exec" {
+    command = "cd ~/final_project/aws/host/ && if [ $(git status --short | wc -l) != 0 ]; then git add host && git commit -m '.' && git push; else echo 'Nothing to commit'; fi"  
   }
 }
