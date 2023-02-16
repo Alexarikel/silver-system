@@ -1,0 +1,82 @@
+def app_host
+pipeline {
+    agent { label 'server1_agent' }
+    triggers {
+        cron('0 * * * *')
+    }
+    parameters {
+	    string(name: 'username', defaultValue: 'ubuntu')
+    }
+    stages {
+        stage ('Receiving host ip') {
+            steps {
+                sh 'mkdir -p host'
+                dir("host") {
+                    git credentialsId: 'host_ip_repo', url: 'git@github.com:DevopsAutumn2022/host.git'
+                    script {
+                        sh "cat host | awk -F ' ' 'NR==1{print \$2}' > tmpfile"
+                        app_host = readFile 'tmpfile'
+                        app_host = app_host.trim()
+                    }
+                    sh """
+                    echo ${app_host}
+                    """
+                }
+            }
+        }
+        stage ('Checkout') {
+            steps {
+                sh 'mkdir -p job'
+                dir("job") {
+                    checkout([$class: 'GitSCM', 
+                    branches: [[name: '*/main']],
+                    extensions: [
+                    [$class: 'SparseCheckoutPaths', 
+                    sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path:'/aws/app/']]]
+                    ],
+                    userRemoteConfigs: [[credentialsId: 'jenkins_key', url: 'git@github.com:DevopsAutumn2022/silver-system.git/']]])
+                }
+            }
+        }
+        stage('Build app image') {
+            steps {
+                echo "Building image.."
+                sh """
+                cd job/aws/app && docker build -t s3_data:1.${BUILD_NUMBER} -t s3_data:latest .
+                """
+            }
+        }
+        stage('Test image') {
+            steps {
+                echo "Testing image.."
+                sh '''
+                res="$(docker images | grep s3_data | grep "1.${BUILD_NUMBER}" -c)"
+                if [ $res -ne 1 ]; then echo failed test && exit 1; fi
+                '''
+            }
+        }
+        stage('Prepare dependencies') {
+            steps {
+                withCredentials([file(credentialsId: 'rds_backup_secret', variable: 'KEY_FILE')]) {
+                    sh'''
+                    cat $KEY_FILE > aws/app/.keys
+                    HOST=$(cat host/host | awk -F ' ' 'NR==2{print $2}')
+                    echo HOST=$HOST >> aws/app/.keys
+                    '''
+                }
+            }
+        }
+        stage('Deploy') {
+	        steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'jenkins_deploy', keyFileVariable: 'jenkins_deploy', usernameVariable: '${params.username}')]) {
+                    sh """
+                    cd aws/app
+                    scp -i ${jenkins_deploy} -o StrictHostKeyChecking=no docker-compose.yml .keys ${params.username}@${app_host}:/home/ubuntu
+                    docker save s3_data:latest | ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${app_host} docker load
+                    ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${app_host} docker-compose up -d --force-recreate
+                    """
+	        }
+	    }
+        }
+    }
+}
