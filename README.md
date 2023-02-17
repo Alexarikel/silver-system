@@ -1,7 +1,7 @@
 # silver-system
 Infrastructure and data transferring process between unrelated companies
 
-### The project immitates ETL process of data transfer between unrelated companies using third party resource - S3 bucket.
+### The project imitates ETL process of data transfer between unrelated companies using third party resource - S3 bucket.
 ---
 
 #### The project schema:
