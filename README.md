@@ -16,7 +16,7 @@ Infrastructure and data transferring process between unrelated companies
 - HTML
 - Jenkins
 - Docker
-- VmWare
+- VMware
 - AWS (VPC, EC2, S3 bucket, AWS RDS)
 - MariaDB databases
 - Bash
