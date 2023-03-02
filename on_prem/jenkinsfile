@@ -92,7 +92,7 @@ pipeline {
                             sh """
                             cd on_prem/app
                             scp -i ${jenkins_deploy} -o StrictHostKeyChecking=no docker-compose.yml .env ${params.username}@${params.server}:~/
-                            docker save app:latest | ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.server} docker load
+                            docker save app:latest | gzip | ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.server} docker load
                             ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.server} docker-compose up -d --force-recreate
                             """
 	                }
