@@ -44,7 +44,7 @@ pipeline {
                     sh """
                     cd on_prem/s3_backup
                     scp -i ${jenkins_deploy} -o StrictHostKeyChecking=no docker-compose.backup.yml .keys ${params.username}@${params.server}:~/
-                    docker save s3_data:latest | ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.server} docker load
+                    docker save s3_data:latest | gzip | ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.server} docker load
                     ssh -i ${jenkins_deploy} -o StrictHostKeyChecking=no ${params.username}@${params.server} docker-compose -f docker-compose.backup.yml up -d --force-recreate
                     """
 	        }
