@@ -17,7 +17,7 @@ pipeline {
                         [$class: 'SparseCheckoutPaths', 
                         sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path:'/on_prem/app/']]]
                         ],
-                        userRemoteConfigs: [[credentialsId: 'jenkins_key', url: 'git@github.com:DevopsAutumn2022/silver-system.git/']]])
+                        userRemoteConfigs: [[credentialsId: 'jenkins_key', url: 'git@github.com:Alexarikel/silver-system.git/']]])
                     }
                 }
                 stage ('Chekout to server1') {
@@ -31,7 +31,7 @@ pipeline {
                         [$class: 'SparseCheckoutPaths', 
                         sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path:'/on_prem/mariadb/']]]
                         ],
-                        userRemoteConfigs: [[credentialsId: 'jenkins_key', url: 'git@github.com:DevopsAutumn2022/silver-system.git/']]])
+                        userRemoteConfigs: [[credentialsId: 'jenkins_key', url: 'git@github.com:Alexarikel/silver-system.git/']]])
                     }
                 }
             }

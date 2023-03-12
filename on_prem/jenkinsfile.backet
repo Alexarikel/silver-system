@@ -12,7 +12,7 @@ pipeline {
                 [$class: 'SparseCheckoutPaths', 
                 sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path:'/on_prem/s3_backup/']]]
                 ],
-                userRemoteConfigs: [[credentialsId: 'jenkins_key', url: 'git@github.com:DevopsAutumn2022/silver-system.git/']]])
+                userRemoteConfigs: [[credentialsId: 'jenkins_key', url: 'git@github.com:Alexarikel/silver-system.git/']]])
             }
         }
         stage('Build backup image') {
